@@ -6,7 +6,7 @@ var expressValidator = require('express-validator');
 var session = require('express-session');
 var flash = require('connect-flash');
 var multer = require('multer');
-var upload = multer({ dest: './public/images/portfolio' });
+var upload = multer({ 'dest': './public/images/portfolio' });
 
 // Routes Files
 var routes = require('./routes/index');

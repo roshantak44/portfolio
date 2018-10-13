@@ -1,8 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
-var upload = module.require({'dest': './public/images/portfolio'});
+var upload = multer({'dest': './public/images/portfolio'});
 var mysql = require('mysql');
+var storage =   multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.fieldname + '-' + Date.now());
+  }
+});
 
 
 var connection = mysql.createConnection({
@@ -22,25 +30,28 @@ router.get('/add', function(req, res, next){
     res.render('admin/add')
 });
 
-router.post('/add', upload.single('profileImage'), function(req, res, next){
+
+
+router.post('/add', upload.single('projectimage'), function(req, res, next){
     //Get form values
     var title = req.body.title;
     var service = req.body.service;
     var description = req.body.description;
     var url = req.body.url;
     var client = req.body.client;
-    var projectdata = req.body.projectdate;
+    var projectdate = req.body.projectdate;
+    
 
     //check image upload
     if(req.file){
-        var projectImageName = req.file.filename;
+        var projectImageName = req.file.projectimage;
     } else {
         var projectImageName = 'noimage.jpg';
     }
 
     //form field validation
-    req.checkBody('title', 'Title field is required');
-    req.checkBody('service', 'Service field is required');
+    req.checkBody('title', 'Title field is required').notEmpty();
+    req.checkBody('service', 'Service field is required').notEmpty();
 
     var errors = req.validationErrors();
 
@@ -59,13 +70,13 @@ router.post('/add', upload.single('profileImage'), function(req, res, next){
         description: description,
         service: service,
         client: client,
-        url: url,
         date: projectdate,
+        url: url, 
         image: projectImageName
        };
     }
  
-    var query = connection.query('INSERT INTO project SET ?', project, function(err, result){
+    mysql.query = connection.query('INSERT INTO projects SET ?', project, function(err, result){
         console.log('Error: '+err);
         console.log('Success: '+result);
     });
@@ -75,5 +86,7 @@ router.post('/add', upload.single('profileImage'), function(req, res, next){
     res.redirect('/admin');
 
 });
+
+
 
 module.exports = router;
